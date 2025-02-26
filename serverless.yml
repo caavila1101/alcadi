@@ -1,0 +1,65 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: alcadi
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: test2
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: test
+
+params:
+  default:
+    tableName: "users-table-${sls:stage}" #Si el stage (entorno de ejecución) es default tableName: "users-table-default" serverless offline --stage dev    
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [UsersTable, Arn] #está obteniendo el ARN (Amazon Resource Name) de la tabla UsersTable. Esto significa que los permisos se aplican únicamente a la tabla DynamoDB creada en resources.
+  environment:
+    USERS_TABLE: ${param:tableName}
+    DYNAMODB_ENDPOINT: http://localhost:8000 # Para conectarse a DynamoDB local
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: "*"
+
+resources:
+  Resources:
+    UsersTable: # 🔹 Este es solo el identificador lógico dentro de CloudFormation
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${param:tableName}
+
+custom:
+  dynamodb:
+    stages:
+      - offline
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true 
+      noStart: true  # Evita que Serverless intente iniciar DynamoDB
