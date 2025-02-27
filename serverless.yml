@@ -1,9 +1,9 @@
 # "org" ensures this Service is used with the correct Serverless Framework Access Key.
-org: alcadi
+org: alcadii
 # "app" enables Serverless Framework Dashboard features and sharing them with other Services.
-app: test2
+app: mvp
 # "service" is the name of this project. This will also be added to your AWS resource names.
-service: test
+service: mvp
 
 params:
   default:
@@ -12,7 +12,11 @@ params:
 plugins:
   - serverless-dynamodb-local
   - serverless-offline
-
+package:
+  individually: true
+  patterns: 
+    - "!.dynamo.db" 
+    - "!.node_modules"
 
 provider:
   name: aws
@@ -35,10 +39,18 @@ provider:
     DYNAMODB_ENDPOINT: http://localhost:8000 # Para conectarse a DynamoDB local
 
 functions:
-  api:
-    handler: handler.handler
+  get-users:
+    handler: getUsers/handler.getUsers
     events:
-      - httpApi: "*"
+      - http:
+          path: users/{id}
+          method: GET
+  create-users:
+    handler: createUsers/handler.createUser
+    events:
+      - http:
+          path: users
+          method: POST
 
 resources:
   Resources:
