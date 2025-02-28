@@ -15,7 +15,6 @@ const createPlayer = async (event, context) => {
   try {
     const body = JSON.parse(event.body);
     const { name, lastName, dateBirth, nacionality, position, currentTeam, teamHistory } = body;
-    console.log("Received body:", body); // ⬅️ Agregar esta línea
 
     const playerId = uuidv4();
 
@@ -24,7 +23,7 @@ const createPlayer = async (event, context) => {
       Item: { playerId, name, lastName, dateBirth, nacionality, position, currentTeam, teamHistory },
     };
 
-    if (!playerId || !name || !lastName || !dateBirth || !nacionality || !position || !currentTeam || !teamHistory) {
+    if (!playerId || !currentTeam ) {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: "All fields are required" }),
