@@ -7,7 +7,7 @@ service: mvp
 
 params:
   default:
-    tableName: "users-table-${sls:stage}" #Si el stage (entorno de ejecución) es default tableName: "users-table-default" serverless offline --stage dev    
+    playersTable: "players-table-${sls:stage}"
 
 plugins:
   - serverless-dynamodb-local
@@ -35,8 +35,11 @@ provider:
           Resource:
             - Fn::GetAtt: [UsersTable, Arn] #está obteniendo el ARN (Amazon Resource Name) de la tabla UsersTable. Esto significa que los permisos se aplican únicamente a la tabla DynamoDB creada en resources.
   environment:
-    USERS_TABLE: ${param:tableName}
+    PLAYERS_TABLE: ${param:playersTable}
     DYNAMODB_ENDPOINT: http://localhost:8000 # Para conectarse a DynamoDB local
+    AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
+    AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
+
 
 functions:
   get-users:
@@ -45,33 +48,39 @@ functions:
       - http:
           path: users/{id}
           method: GET
-  create-users:
-    handler: createUsers/handler.createUser
+  create-players:
+    handler: players/create/handler.createPlayer
     events:
       - http:
-          path: users
+          path: players
           method: POST
 
 resources:
   Resources:
-    UsersTable: # 🔹 Este es solo el identificador lógico dentro de CloudFormation
+    PlayersTable:
       Type: AWS::DynamoDB::Table
       Properties:
+        TableName: ${param:playersTable}
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: userId
+          - AttributeName: playerId
+            AttributeType: S
+          - AttributeName: currentTeam
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
-        TableName: ${param:tableName}
+          - AttributeName: playerId
+            KeyType: HASH  # Partition Key
+          - AttributeName: currentTeam
+            KeyType: RANGE  # Sort Key
 
 custom:
   dynamodb:
     stages:
       - offline
+      - dev
     start:
       port: 8000
       inMemory: true
       migrate: true 
       noStart: true  # Evita que Serverless intente iniciar DynamoDB
+      host: 127.0.0.1
