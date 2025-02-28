@@ -37,16 +37,16 @@ provider:
   environment:
     PLAYERS_TABLE: ${param:playersTable}
     DYNAMODB_ENDPOINT: http://localhost:8000 # Para conectarse a DynamoDB local
-    AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
-    AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
+    #AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
+    #AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
 
 
 functions:
   get-users:
-    handler: getUsers/handler.getUsers
+    handler: players/get/handler.getPlayers
     events:
       - http:
-          path: users/{id}
+          path: players/{id}/{team}
           method: GET
   create-players:
     handler: players/create/handler.createPlayer
