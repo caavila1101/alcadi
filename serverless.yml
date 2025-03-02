@@ -60,6 +60,12 @@ functions:
       - http:
           path: players/{id}
           method: PUT
+  delete-players:
+    handler: players/delete/handler.deletePlayer
+    events:
+      - http:
+          path: players/{id}
+          method: DELETE
 
 resources:
   Resources:
