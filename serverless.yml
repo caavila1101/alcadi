@@ -46,7 +46,7 @@ functions:
     handler: players/get/handler.getPlayers
     events:
       - http:
-          path: players/{id}/{team}
+          path: players/{id}
           method: GET
   create-players:
     handler: players/create/handler.createPlayer
@@ -54,6 +54,12 @@ functions:
       - http:
           path: players
           method: POST
+  update-players:
+    handler: players/update/handler.updatePlayer
+    events:
+      - http:
+          path: players/{id}
+          method: PUT
 
 resources:
   Resources:
@@ -65,13 +71,13 @@ resources:
         AttributeDefinitions:
           - AttributeName: playerId
             AttributeType: S
-          - AttributeName: currentTeam
-            AttributeType: S
+           #- AttributeName: currentTeam
+           #  AttributeType: S
         KeySchema:
           - AttributeName: playerId
             KeyType: HASH  # Partition Key
-          - AttributeName: currentTeam
-            KeyType: RANGE  # Sort Key
+          #- AttributeName: currentTeam
+           #  KeyType: RANGE  # Sort Key
 
 custom:
   dynamodb:

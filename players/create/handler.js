@@ -14,13 +14,13 @@ const dynamoDb = DynamoDBDocumentClient.from(client);
 const createPlayer = async (event, context) => {
   try {
     const body = JSON.parse(event.body);
-    const { name, lastName, dateBirth, nacionality, position, currentTeam, teamHistory } = body;
+    const { name, lastName, dateBirth, nationality, position, currentTeam, teamHistory } = body;
 
     const playerId = uuidv4();
 
     const params = {
       TableName: PLAYERS_TABLE,
-      Item: { playerId, name, lastName, dateBirth, nacionality, position, currentTeam, teamHistory },
+      Item: { playerId, name, lastName, dateBirth, nationality, position, currentTeam, teamHistory },
     };
 
     if (!playerId || !currentTeam ) {
@@ -29,13 +29,12 @@ const createPlayer = async (event, context) => {
         body: JSON.stringify({ error: "All fields are required" }),
       };
     }
-    console.log("Received body:", params); // ⬅️ Agregar esta línea
 
     await dynamoDb.send(new PutCommand(params));
 
     return {
       statusCode: 201,
-      body: JSON.stringify({ message: "Player created", user: { playerId, name, lastName, dateBirth, nacionality, position, currentTeam, teamHistory } }),
+      body: JSON.stringify({ message: "Player created", player: { playerId, name, lastName, dateBirth, nationality, position, currentTeam, teamHistory } }),
     };
   } catch (error) {
     console.error("Error creating player:", error);

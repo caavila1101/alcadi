@@ -12,7 +12,7 @@ const dynamoDb = DynamoDBDocumentClient.from(client);
 
 const getPlayers = async (event, context) => {
   try {
-    if (!event.pathParameters || !event.pathParameters.id || !event.pathParameters.team) {
+    if (!event.pathParameters || !event.pathParameters.id) {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: "Player ID is required" }),
@@ -20,14 +20,12 @@ const getPlayers = async (event, context) => {
     }
 
     const playerId = event.pathParameters.id;
-    const teamPlayer = event.pathParameters.team;
 
     const params = {
       TableName: PLAYERS_TABLE,
-      KeyConditionExpression: "playerId = :playerId AND currentTeam = :teamPlayer",
+      KeyConditionExpression: "playerId = :playerId",
       ExpressionAttributeValues: { 
-        ":playerId": playerId,
-        ":teamPlayer": teamPlayer
+        ":playerId": playerId
       },
     };
 
