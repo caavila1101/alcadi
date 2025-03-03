@@ -33,7 +33,7 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-            - Fn::GetAtt: [UsersTable, Arn] #está obteniendo el ARN (Amazon Resource Name) de la tabla UsersTable. Esto significa que los permisos se aplican únicamente a la tabla DynamoDB creada en resources.
+            - Fn::GetAtt: [PlayersTable, Arn] #está obteniendo el ARN (Amazon Resource Name) de la tabla UsersTable. Esto significa que los permisos se aplican únicamente a la tabla DynamoDB creada en resources.
   environment:
     PLAYERS_TABLE: ${param:playersTable}
     DYNAMODB_ENDPOINT: http://localhost:8000 # Para conectarse a DynamoDB local
