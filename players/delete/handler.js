@@ -26,13 +26,23 @@ const deletePlayer = async (event, context) => {
             Key: { 
                 playerId: id
             },
+            ReturnValues: "ALL_OLD",
         };
 
-        await dynamoDb.send(new DeleteCommand(params));
+        const result = await dynamoDb.send(new DeleteCommand(params));
+
+        if (!result.Attributes) {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ error: "Player not found" }),
+            };
+        }
+
+        const deletedPlayerName = result.Attributes.name + " " + result.Attributes.lastName;
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: `Player ${id} deleted successfully` }),
+            body: JSON.stringify({ message: `Player ${deletedPlayerName} was deleted successfully` }),
         };
 
 
