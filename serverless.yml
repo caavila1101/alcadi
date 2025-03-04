@@ -8,6 +8,7 @@ service: mvp
 params:
   default:
     playersTable: "players-table-${sls:stage}"
+    teamsTable: "teams-table-${sls:stage}"
 
 plugins:
   - serverless-dynamodb-local
@@ -34,14 +35,17 @@ provider:
             - dynamodb:DeleteItem
           Resource:
             - Fn::GetAtt: [PlayersTable, Arn] #está obteniendo el ARN (Amazon Resource Name) de la tabla UsersTable. Esto significa que los permisos se aplican únicamente a la tabla DynamoDB creada en resources.
+            - Fn::GetAtt: [TeamsTable, Arn]
   environment:
     PLAYERS_TABLE: ${param:playersTable}
+    TEAMS_TABLE: ${param:teamsTable}
     DYNAMODB_ENDPOINT: http://localhost:8000 # Para conectarse a DynamoDB local
     #AWS_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID}
     #AWS_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY}
 
 
 functions:
+  #PLAYER
   get-users:
     handler: players/get/handler.getPlayers
     events:
@@ -71,6 +75,13 @@ functions:
       - http:
           path: players/{id}
           method: DELETE
+  #TEAM
+  create-teams:
+    handler: teams/create/handler.createTeam
+    events:
+      - http:
+          path: teams
+          method: POST
 
 resources:
   Resources:
@@ -104,6 +115,26 @@ resources:
                 KeyType: HASH  
               - AttributeName: name
                 KeyType: RANGE  
+            Projection:
+              ProjectionType: ALL
+    TeamsTable: 
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${param:teamsTable}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: teamId
+            AttributeType: S
+          - AttributeName: name
+            AttributeType: S
+        KeySchema:
+          - AttributeName: teamId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: NameTeamIndex 
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
 
