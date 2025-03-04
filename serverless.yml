@@ -46,8 +46,13 @@ functions:
     handler: players/get/handler.getPlayers
     events:
       - http:
-          path: players/{id}
+          path: players
           method: GET
+          request:  
+            parameters:
+              querystrings:
+                name: false
+                lastName: false
   create-players:
     handler: players/create/handler.createPlayer
     events:
@@ -77,13 +82,30 @@ resources:
         AttributeDefinitions:
           - AttributeName: playerId
             AttributeType: S
-           #- AttributeName: currentTeam
-           #  AttributeType: S
+          - AttributeName: name
+            AttributeType: S
+          - AttributeName: lastName
+            AttributeType: S
         KeySchema:
           - AttributeName: playerId
-            KeyType: HASH  # Partition Key
-          #- AttributeName: currentTeam
-           #  KeyType: RANGE  # Sort Key
+            KeyType: HASH  
+        GlobalSecondaryIndexes:
+          - IndexName: NameIndex 
+            KeySchema:
+              - AttributeName: name
+                KeyType: HASH  
+              - AttributeName: lastName
+                KeyType: RANGE 
+            Projection:
+              ProjectionType: ALL
+          - IndexName: LastNameIndex 
+            KeySchema:
+              - AttributeName: lastName
+                KeyType: HASH  
+              - AttributeName: name
+                KeyType: RANGE  
+            Projection:
+              ProjectionType: ALL
 
 custom:
   dynamodb:

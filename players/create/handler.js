@@ -14,13 +14,13 @@ const dynamoDb = DynamoDBDocumentClient.from(client);
 const createPlayer = async (event, context) => {
   try {
     const body = JSON.parse(event.body);
-    const { name, lastName, dateBirth, position, preferredFoot, height, weight, currentTeam } = body;
+    const { name, lastName, dateBirth, position, preferredFoot, height, weight } = body;
 
     const playerId = uuidv4();
 
     const params = {
       TableName: PLAYERS_TABLE,
-      Item: { playerId, name, lastName, dateBirth, position, preferredFoot, height, weight, currentTeam },
+      Item: { playerId, name, lastName, dateBirth, position, preferredFoot, height, weight },
     };
 
     if (!playerId ) {
@@ -34,7 +34,7 @@ const createPlayer = async (event, context) => {
 
     return {
       statusCode: 201,
-      body: JSON.stringify({ message: "Player created", player: { playerId, name, lastName, dateBirth, position, preferredFoot, height, weight, currentTeam } }),
+      body: JSON.stringify({ message: "Player created", player: { playerId, name, lastName, dateBirth, position, preferredFoot, height, weight } }),
     };
   } catch (error) {
     console.error("Error creating player:", error);

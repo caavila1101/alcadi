@@ -12,22 +12,45 @@ const dynamoDb = DynamoDBDocumentClient.from(client);
 
 const getPlayers = async (event, context) => {
   try {
-    if (!event.pathParameters || !event.pathParameters.id) {
+    const queryParams = event.queryStringParameters || {};
+
+    if (!queryParams.name && !queryParams.lastName) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: "Player ID is required" }),
+        body: JSON.stringify({ error: "Provide at least 'name' or 'lastName' as query parameters" }),
       };
     }
 
-    const playerId = event.pathParameters.id;
+    let params;
 
-    const params = {
-      TableName: PLAYERS_TABLE,
-      KeyConditionExpression: "playerId = :playerId",
-      ExpressionAttributeValues: { 
-        ":playerId": playerId
-      },
-    };
+    if (queryParams.name && queryParams.lastName) {
+      params = {
+        TableName: PLAYERS_TABLE,
+        IndexName: "NameIndex",
+        KeyConditionExpression: "#name = :nameValue AND #lastName = :lastNameValue",
+        ExpressionAttributeNames: { "#name": "name", "#lastName": "lastName" },
+        ExpressionAttributeValues: { 
+          ":nameValue": queryParams.name, 
+          ":lastNameValue": queryParams.lastName 
+        }
+      };
+    } else if (queryParams.name) {
+      params = {
+        TableName: PLAYERS_TABLE,
+        IndexName: "NameIndex",
+        KeyConditionExpression: "#name = :nameValue",
+        ExpressionAttributeNames: { "#name": "name" },
+        ExpressionAttributeValues: { ":nameValue": queryParams.name }
+      };
+    } else if (queryParams.lastName) {
+      params = {
+        TableName: PLAYERS_TABLE,
+        IndexName: "LastNameIndex",
+        KeyConditionExpression: "#lastName = :lastNameValue",
+        ExpressionAttributeNames: { "#lastName": "lastName" },
+        ExpressionAttributeValues: { ":lastNameValue": queryParams.lastName }
+      };
+    }
 
     const result = await dynamoDb.send(new QueryCommand(params));
 
