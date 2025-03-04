@@ -13,7 +13,7 @@ const dynamoDb = DynamoDBDocumentClient.from(client);
 const updatePlayer = async (event, context) => {
     try {
         const { id } = event.pathParameters || {};
-        const { name, lastName, dateBirth, nationality, position, currentTeam } = JSON.parse(event.body);
+        const { name, lastName, dateBirth, position, preferredFoot, height, weight } = JSON.parse(event.body);
         
         if (!id) {
             return {
@@ -22,27 +22,38 @@ const updatePlayer = async (event, context) => {
             };
         }
 
-        const paramsSortedKey = {
-            TableName: PLAYERS_TABLE,
-            KeyConditionExpression: "playerId = :playerId",
-            ExpressionAttributeValues: { 
-              ":playerId": id,
-            },
-        };
-
-        const getSortedKey = await dynamoDb.send(new QueryCommand(paramsSortedKey));
-        let getTeamHistory = (getSortedKey.Items[0]?.teamHistory ?? []);
-
-        if (!getTeamHistory.includes(currentTeam)) {
-            getTeamHistory.push(currentTeam); 
+        if(!name && !lastName && !dateBirth && !position && !preferredFoot && !height && !weight){
+            return {
+                statusCode: 400,
+                body: JSON.stringify(
+                    {
+                        error: "Provide at least one field to update"
+                    }
+                )
+            };
         }
 
         const params = {
-            TableName: PLAYERS_TABLE,  
+            TableName: PLAYERS_TABLE,
             Key: { playerId: id },
-            UpdateExpression: 'SET #name = :name , #lastName = :lastName, #dateBirth = :dateBirth, #nationality = :nationality, #position = :position, #currentTeam = :currentTeam, teamHistory = :teamHistory',  
-            ExpressionAttributeNames: { '#name': 'name', '#lastName': 'lastName', '#dateBirth': 'dateBirth', '#nationality': 'nationality', '#position': 'position', '#currentTeam': 'currentTeam' }, 
-            ExpressionAttributeValues: { ':name': name, ':lastName': lastName, ':dateBirth': dateBirth, ':nationality': nationality, ':position': position, ':currentTeam': currentTeam, ':teamHistory': getTeamHistory},
+            UpdateExpression: "SET #name = :name, #lastName = :lastName, #dateBirth = :dateBirth, #position = :position, #preferredFoot = :preferredFoot, #height = :height, #weight = :weight",
+            ExpressionAttributeNames: { 
+                '#name': 'name', 
+                '#lastName': 'lastName', 
+                '#dateBirth': 'dateBirth', 
+                '#position': 'position', 
+                '#preferredFoot': 'preferredFoot', 
+                '#height': 'height', 
+                '#weight': 'weight' }, 
+            ExpressionAttributeValues: {
+                ":name": name,
+                ":lastName": lastName,
+                ":dateBirth": dateBirth,
+                ":position": position,
+                ":preferredFoot": preferredFoot,
+                ":height": height,
+                ":weight": weight,
+              },
             ReturnValues: 'ALL_NEW',
         };
 
